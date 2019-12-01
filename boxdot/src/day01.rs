@@ -1,4 +1,4 @@
-pub fn solve(input: &str) -> (i64, i64) {
+pub fn solve(input: &str) -> (u64, u64) {
     let masses = input.lines().filter_map(|l| l.parse().ok());
 
     let part1 = masses.clone().filter_map(fuel).sum();
@@ -10,11 +10,6 @@ pub fn solve(input: &str) -> (i64, i64) {
     (part1, part2)
 }
 
-fn fuel(mass: i64) -> Option<i64> {
-    let fuel = mass / 3 - 2;
-    if fuel > 0 {
-        Some(fuel)
-    } else {
-        None
-    }
+fn fuel(mass: u64) -> Option<u64> {
+    (mass / 3).checked_sub(2)
 }
