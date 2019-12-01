@@ -1,3 +1,5 @@
+mod day01;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input_file = std::env::args()
         .nth(1)
@@ -10,8 +12,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .ok_or_else(|| format!("can't deduce day from: {}", input_file))?
         .parse()?;
 
-    let _input = std::fs::read_to_string(input_file)?;
+    let input = std::fs::read_to_string(input_file)?;
     match day {
+        1 => println!("{:?}", day01::solve(&input)),
         _ => eprintln!("invalid day: {}", day),
     }
 
