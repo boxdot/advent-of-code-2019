@@ -1,4 +1,5 @@
 mod day01;
+mod day02;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input_file = std::env::args()
@@ -15,6 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = std::fs::read_to_string(input_file)?;
     match day {
         1 => println!("{:?}", day01::solve(&input)),
+        2 => println!("{:?}", day02::solve(&input)),
         _ => eprintln!("invalid day: {}", day),
     }
 
