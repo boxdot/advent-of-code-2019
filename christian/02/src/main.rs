@@ -1,40 +1,32 @@
 use itertools::*;
-use std::convert::TryInto;
 use std::io::{self, prelude::*};
 
 fn parse(input: &Vec<String>) -> Vec<usize> {
     let ints = input.iter().map(|x| x.split(',')).flatten();
-    let mut result: Vec<_> = ints.filter_map(|x| x.parse().ok()).collect();
-    result.resize((result.len() + 3) / 4 * 4, 0);
-    result
+    ints.filter_map(|x| x.parse().ok()).collect()
 }
 
-fn solve1(mut input: Vec<usize>, noun: usize, verb: usize) -> Result<usize, ()> {
-    input[1] = noun;
-    input[2] = verb;
-    for pos in (0..input.len()).step_by(4) {
-        let data: [usize; 4] = input[pos..pos + 4].try_into().unwrap();
-        match data[0] {
-            01 => input[data[3]] = input[data[1]] + input[data[2]],
-            02 => input[data[3]] = input[data[1]] * input[data[2]],
-            99 => break,
+fn solve1(mem: &mut [usize], noun: usize, verb: usize) -> Result<usize, ()> {
+    mem[1] = noun;
+    mem[2] = verb;
+    for pos in (0..mem.len()).step_by(4) {
+        match mem[pos] {
+            01 => mem[mem[pos + 3]] = mem[mem[pos + 1]] + mem[mem[pos + 2]],
+            02 => mem[mem[pos + 3]] = mem[mem[pos + 1]] * mem[mem[pos + 2]],
+            99 => return Ok(mem[0]),
             _ => return Err(()),
         };
-    }
-    Ok(input[0])
-}
-
-fn solve2(input: Vec<usize>, result: usize) -> Result<usize, ()> {
-    for (noun, verb) in iproduct!(0..100, 0..100) {
-        if solve1(input.clone(), noun, verb) == Ok(result) {
-            return Ok(noun * 100 + verb);
-        }
     }
     Err(())
 }
 
+fn solve2(input: Vec<usize>, result: usize) -> Option<(usize, usize)> {
+    iproduct!(0..100, 0..100)
+        .find(|&(noun, verb)| solve1(&mut input.clone(), noun, verb) == Ok(result))
+}
+
 fn main() {
     let input = parse(&io::stdin().lock().lines().map(|x| x.unwrap()).collect());
-    println!("Part1: {:?}", solve1(input.clone(), 12, 02));
-    println!("Part1: {:?}", solve2(input.clone(), 19690720));
+    println!("Part1: {:?}", solve1(&mut input.clone(), 12, 02));
+    println!("Part2: {:?}", solve2(input.clone(), 19690720));
 }
