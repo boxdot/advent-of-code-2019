@@ -1,15 +1,12 @@
 use itertools::*;
 use std::cmp::Ordering as Ord;
+use std::iter::successors;
 
 fn valid(x: usize, run_filter: &[Ord]) -> bool {
-    let digits =
-        std::iter::successors(Some(x), |x| Some(x / 10).filter(|x| *x != 0)).map(|x| x % 10);
-    for (_, group) in &digits.clone().group_by(|d| *d) {
-        if run_filter.contains(&group.count().cmp(&2)) {
-            return digits.tuple_windows().filter(|(a, b)| a < b).count() == 0;
-        }
-    }
-    false
+    let digits = successors(Some(x), |x| Some(x / 10).filter(|x| *x != 0)).map(|x| x % 10);
+    !digits.clone().tuple_windows().any(|(a, b)| a < b)
+        && (digits.group_by(|d| *d).into_iter())
+            .any(|(_, run)| run_filter.contains(&run.count().cmp(&2)))
 }
 
 fn solve(range: std::ops::RangeInclusive<usize>, run_filter: &[Ord]) -> usize {
