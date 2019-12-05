@@ -39,9 +39,9 @@ mod tests {
 
     #[test]
     fn test_execute() {
-        assert_eq!(
-            execute(vec![1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50], 12, 2),
-            Ok(3500)
-        );
+        let input = vec![1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50];
+        let noun = input[1];
+        let verb = input[2];
+        assert_eq!(execute(input, noun, verb), Ok(3500));
     }
 }
