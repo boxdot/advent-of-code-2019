@@ -12,9 +12,11 @@ fn parse(input: &str) -> Option<RangeInclusive<usize>> {
     Some(start..=end)
 }
 
+type Password = [u8; 6];
+
 fn part1(range: RangeInclusive<usize>) -> usize {
-    let adjacent_digits_are_the_same = |digits: &Vec<u32>| digits.windows(2).any(|w| w[0] == w[1]);
-    let never_decrease = |digits: &Vec<u32>| digits.windows(2).all(|w| w[0] <= w[1]);
+    let adjacent_digits_are_the_same = |digits: &Password| digits.windows(2).any(|w| w[0] == w[1]);
+    let never_decrease = |digits: &Password| digits.windows(2).all(|w| w[0] <= w[1]);
 
     range
         .map(digits)
@@ -24,29 +26,31 @@ fn part1(range: RangeInclusive<usize>) -> usize {
 }
 
 fn part2(range: RangeInclusive<usize>) -> usize {
-    let adjacent_digits_are_the_same = |digits: &Vec<u32>| {
-        digits.windows(2).enumerate().any(|(pos, w)| {
-            let left_pos = pos.saturating_sub(1);
-            let right_pos = (pos + 1 + 1).min(5);
-            w[0] == w[1]
-                && (left_pos == pos || digits[left_pos] != w[0])
-                && (right_pos == pos + 1 || digits[right_pos] != w[0])
-        })
+    let adjacent_digits_are_the_same_prime = |digits: &Password| {
+        let mut extended = [255; 8];
+        extended[1..7].copy_from_slice(digits);
+        extended
+            .windows(4)
+            .any(|x| x[0] != x[1] && x[1] == x[2] && x[2] != x[3])
     };
-    let never_decrease = |digits: &Vec<u32>| digits.windows(2).all(|w| w[0] <= w[1]);
+    let never_decrease = |digits: &Password| digits.windows(2).all(|w| w[0] <= w[1]);
 
     range
         .map(digits)
-        .filter(adjacent_digits_are_the_same)
+        .filter(adjacent_digits_are_the_same_prime)
         .filter(never_decrease)
         .count()
 }
 
-fn digits(n: usize) -> Vec<u32> {
-    n.to_string()
-        .chars()
-        .map(|c| c.to_digit(10).unwrap())
-        .collect()
+fn digits(n: usize) -> Password {
+    [
+        (n % 1000000 / 100000) as u8,
+        (n % 100000 / 10000) as u8,
+        (n % 10000 / 1000) as u8,
+        (n % 1000 / 100) as u8,
+        (n % 100 / 10) as u8,
+        (n % 10 / 1) as u8,
+    ]
 }
 
 #[cfg(test)]
