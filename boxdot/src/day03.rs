@@ -56,10 +56,9 @@ fn follow_wire(wire: &[(Direction, usize)], mut action: impl FnMut(isize, isize,
     }
 }
 
-fn build_grid(
-    wire1: &[(Direction, usize)],
-    wire2: &[(Direction, usize)],
-) -> HashMap<(isize, isize), (Option<usize>, Option<usize>)> {
+type Grid = HashMap<(isize, isize), (Option<usize>, Option<usize>)>;
+
+fn build_grid(wire1: &[(Direction, usize)], wire2: &[(Direction, usize)]) -> Grid {
     let mut grid = HashMap::new();
     follow_wire(&wire1, |x, y, step| {
         grid.entry((x, y))
@@ -78,8 +77,8 @@ fn build_grid(
     grid
 }
 
-fn part1(grid: &HashMap<(isize, isize), (Option<usize>, Option<usize>)>) -> Option<usize> {
-    grid.into_iter()
+fn part1(grid: &Grid) -> Option<usize> {
+    grid.iter()
         .filter(|&((x, y), (wire1, wire2))| {
             wire1.is_some() && wire2.is_some() && (*x != 0 || *y != 0)
         })
@@ -87,8 +86,8 @@ fn part1(grid: &HashMap<(isize, isize), (Option<usize>, Option<usize>)>) -> Opti
         .min()
 }
 
-fn part2(grid: &HashMap<(isize, isize), (Option<usize>, Option<usize>)>) -> Option<usize> {
-    grid.into_iter()
+fn part2(grid: &Grid) -> Option<usize> {
+    grid.iter()
         .filter(|&((x, y), (wire1, wire2))| {
             wire1.is_some() && wire2.is_some() && (*x != 0 || *y != 0)
         })
