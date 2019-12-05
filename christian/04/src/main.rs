@@ -39,7 +39,7 @@ fn compute(upper_bound: u64, part1: bool) -> usize {
 
     // state space is: digit, digits left, had_run, below_bound
     let mut state = vec![0; 2 * 2 * 11 * (num_digits + 1)];
-    let get_index = |digit: Option<usize>, left: usize, had_run: bool, below_bound: bool| {
+    let index = |digit: Option<usize>, left: usize, had_run: bool, below_bound: bool| {
         if left > num_digits {
             None
         } else {
@@ -51,66 +51,56 @@ fn compute(upper_bound: u64, part1: bool) -> usize {
             )
         }
     };
+    let try_get =
+        |state: &[usize], index: Option<usize>| index.map(|index| state[index]).unwrap_or(0);
 
-    state[get_index(None, num_digits, false, false).unwrap()] = 1;
-    for digit in 0..=9 {
+    state[index(None, num_digits, false, false).unwrap()] = 1;
+
+    for digit in 0..=9_usize {
         for left in 0..=num_digits {
             for &had_run in [false, true].into_iter() {
                 for &below_bound in [false, true].into_iter() {
-                    // how many used digits do we want to put into current digit?
+                    let prev_digit = digit.checked_sub(1);
                     let mut sum = 0;
-                    let mut max_this_digit = num_digits - left;
-                    let mut min_this_digit = 0;
-                    if !below_bound {
-                        min_this_digit = bound_digit_count[digit];
-                        max_this_digit = bound_digit_count[digit];
-                    }
-                    for count in min_this_digit..=max_this_digit {
-                        if !had_run {
-                            if (part1 && count > 1) || count == 2 {
-                                continue;
-                            }
+
+                    // how many used digits do we want to put into current digit?
+                    for count in 0..=(num_digits - left) {
+                        // if we do not want a run in this state, make sure we do not get one
+                        if !had_run && ((part1 && count > 1) || count == 2) {
+                            continue;
                         }
+                        // if we do not want to be less than the bound, make sure we are not
+                        if !below_bound && count != bound_digit_count[digit] {
+                            continue;
+                        }
+                        // try all possible state transitions that are allowed
                         if !below_bound || count > bound_digit_count[digit] {
                             if had_run {
-                                if let Some(index) =
-                                    get_index(digit.checked_sub(1), left + count, true, false)
-                                {
-                                    sum += state[index];
-                                }
+                                sum +=
+                                    try_get(&state, index(prev_digit, left + count, true, false));
                             }
                             if !had_run || (part1 && count >= 2) || count == 2 {
-                                if let Some(index) =
-                                    get_index(digit.checked_sub(1), left + count, false, false)
-                                {
-                                    sum += state[index];
-                                }
+                                sum +=
+                                    try_get(&state, index(prev_digit, left + count, false, false));
                             }
                         }
                         if below_bound {
                             if had_run {
-                                if let Some(index) =
-                                    get_index(digit.checked_sub(1), left + count, true, true)
-                                {
-                                    sum += state[index];
-                                }
+                                sum += try_get(&state, index(prev_digit, left + count, true, true));
                             }
                             if !had_run || (part1 && count >= 2) || count == 2 {
-                                if let Some(index) =
-                                    get_index(digit.checked_sub(1), left + count, false, true)
-                                {
-                                    sum += state[index];
-                                }
+                                sum +=
+                                    try_get(&state, index(prev_digit, left + count, false, true));
                             }
                         }
                     }
-                    state[get_index(Some(digit), left, had_run, below_bound).unwrap()] = sum;
+                    state[index(Some(digit), left, had_run, below_bound).unwrap()] = sum;
                 }
             }
         }
     }
 
-    state[get_index(Some(9), 0, true, true).unwrap()]
+    state[index(Some(9), 0, true, true).unwrap()]
 }
 
 fn main() {
