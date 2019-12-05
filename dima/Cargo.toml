@@ -1,0 +1,5 @@
+[package]
+name = "dima-advent-of-code-2019"
+version = "1.0.0"
+authors = ["Dmitry Kochkin <cooch@mail.ru>"]
+edition = "2018"
