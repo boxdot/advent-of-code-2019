@@ -3,6 +3,7 @@ mod day02;
 mod day03;
 mod day04;
 mod day05;
+mod day06;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input_file = std::env::args()
@@ -23,6 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         3 => println!("{:?}", day03::solve(&input)),
         4 => println!("{:?}", day04::solve(&input)),
         5 => println!("{:?}", day05::solve(&input)),
+        6 => println!("{:?}", day06::solve(&input)),
         _ => eprintln!("invalid day: {}", day),
     }
 
