@@ -42,6 +42,7 @@ fn part2(range: RangeInclusive<usize>) -> usize {
         .count()
 }
 
+#[allow(clippy::unreadable_literal, clippy::identity_op)]
 fn digits(n: usize) -> Password {
     [
         (n % 1000000 / 100000) as u8,
