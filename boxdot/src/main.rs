@@ -6,11 +6,16 @@ mod day05;
 mod day06;
 mod day07;
 mod day08;
+mod day09;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input_file = std::env::args()
+    let mut args = std::env::args();
+    let input_file = args
         .nth(1)
         .ok_or("Usage: advent-of-code-2019 <dayYY.txt>")?;
+    if let Some(arg) = args.next() {
+        return Err(format!("unexpected argument: {}", arg).into());
+    }
 
     let re = regex::Regex::new(r"^.*day(\d+).txt$")?;
     let day: u8 = re
@@ -29,6 +34,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         6 => println!("{:?}", day06::solve(&input)),
         7 => println!("{:?}", day07::solve(&input)),
         8 => println!("{:?}", day08::solve(&input)),
+        9 => println!("{:?}", day09::solve(&input)),
         _ => eprintln!("invalid day: {}", day),
     }
 
