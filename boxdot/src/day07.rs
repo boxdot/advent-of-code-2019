@@ -20,35 +20,35 @@ pub fn solve(input: &str) -> Result<(i64, i64), Error> {
     Ok((part1, part2))
 }
 
-fn run_with_phase(mem: &Vec<i64>, phase: [i64; 5]) -> Result<i64, Error> {
+fn run_with_phase(mem: &[i64], phase: [i64; 5]) -> Result<i64, Error> {
     phase.iter().try_fold(0, |out, &phase_value| {
-        let output = run(mem.clone(), &[phase_value, out])?;
+        let output = run(mem.to_owned(), &[phase_value, out])?;
         assert_eq!(output.len(), 1);
         Ok(output[0])
     })
 }
 
-fn run_with_feedback_loop(mem: &Vec<i64>, phase: [i64; 5]) -> Result<i64, Error> {
-    let (a_in, a_out) = run_async(mem.clone());
+fn run_with_feedback_loop(mem: &[i64], phase: [i64; 5]) -> Result<i64, Error> {
+    let (a_in, a_out) = run_async(mem.to_owned());
     a_in.send(phase[0]).unwrap();
     a_in.send(0).unwrap();
 
-    let (b_in, b_out) = run_async(mem.clone());
+    let (b_in, b_out) = run_async(mem.to_owned());
     b_in.send(phase[1]).unwrap();
 
-    let (c_in, c_out) = run_async(mem.clone());
+    let (c_in, c_out) = run_async(mem.to_owned());
     c_in.send(phase[2]).unwrap();
 
-    let (d_in, d_out) = run_async(mem.clone());
+    let (d_in, d_out) = run_async(mem.to_owned());
     d_in.send(phase[3]).unwrap();
 
-    let (e_in, e_out) = run_async(mem.clone());
+    let (e_in, e_out) = run_async(mem.to_owned());
     e_in.send(phase[4]).unwrap();
 
     let connect = |input: Receiver<i64>, output: Sender<i64>| {
         std::thread::spawn(move || {
             while let Ok(value) = input.recv() {
-                if !output.send(value).is_ok() {
+                if output.send(value).is_err() {
                     return Some(value);
                 }
             }

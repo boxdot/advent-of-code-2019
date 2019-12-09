@@ -7,9 +7,9 @@ pub fn solve(input: &str) -> Option<(usize, String)> {
     let part1 = layers
         .iter()
         .map(|layer| {
-            let num_zeroes = layer.iter().filter(|&&b| b == b'0').count();
-            let num_ones = layer.iter().filter(|&&b| b == b'1').count();
-            let num_twos = layer.iter().filter(|&&b| b == b'2').count();
+            let num_zeroes = bytecount::count(layer, b'0');
+            let num_ones = bytecount::count(layer, b'1');
+            let num_twos = bytecount::count(layer, b'2');
             (num_zeroes, num_ones, num_twos)
         })
         .min_by_key(|&(num_zeroes, _, _)| num_zeroes)
