@@ -121,7 +121,11 @@ fn create_intersections(verticals: &Vec<Vertical>, horizontals: &Vec<Horizontal>
 }
 
 fn direction(inverted: bool) -> char {
-    if inverted { '-'} else {'+'}
+    if inverted {
+        '-'
+    } else {
+        '+'
+    }
 }
 
 fn print_vertical(v: &Vertical) {
