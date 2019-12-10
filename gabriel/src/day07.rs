@@ -1,4 +1,4 @@
-use advent_of_code_2019::run_intcode_computer;
+use aoc2019::run_intcode_computer;
 
 pub fn unlock(program: &str) -> Result<(usize, usize), Box<dyn std::error::Error>> {
     let part1 = permutohedron::Heap::new(&mut [0, 1, 2, 3, 4])
