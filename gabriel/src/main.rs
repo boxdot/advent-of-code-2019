@@ -3,6 +3,7 @@ mod day02;
 mod day04;
 mod day05;
 mod day06;
+mod day08;
 
 use std::fs;
 
@@ -22,6 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         4 => day04::unlock(&input?),
         5 => day05::unlock(&input?),
         6 => day06::unlock(&input?),
+        8 => day08::unlock(&input?),
         n if n >= 1 || n <= 25 => panic!("wow there, you have to be more patient!"),
         _ => panic!("sadly, what you are trying to ask for is impossible!"),
     }?;
