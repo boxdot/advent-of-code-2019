@@ -1,0 +1,12 @@
+[package]
+name = "app"
+version = "0.2.0"
+authors = ["Christian Vetter <veaac.fdirct@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+itertools = "0.8.2"
+text_io = "0.1.7"
+cgmath = "0.17.0"
+termion = "1.5.4"
+permutator = "0.3.3"
