@@ -25,9 +25,7 @@ fn meets_criteria_part2(number: usize) -> bool {
         .iter()
         .group_by(|d| *d)
         .into_iter()
-        .any(|(_, group)| {
-            group.count() >= 2
-        });
+        .any(|(_, group)| group.count() >= 2);
 
     let part1 = meets_criteria_part1(number);
     part1 && many_consecutive_digits

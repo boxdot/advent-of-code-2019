@@ -47,7 +47,14 @@ pub fn unlock(input: &str) -> Result<(usize, usize), Box<dyn std::error::Error>>
     let image = decode_image(input, width, height);
     for y in 0..height {
         for x in 0..width {
-            print!("{}", if image[x + y * width] == 0 { " " } else { "⭐" });
+            print!(
+                "{}",
+                if image[x + y * width] == 0 {
+                    " "
+                } else {
+                    "⭐"
+                }
+            );
         }
         println!("");
     }

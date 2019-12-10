@@ -2,26 +2,33 @@ use itertools::*;
 use std::collections::{hash_map::Entry, HashMap};
 
 pub fn unlock(input: &str) -> Result<(usize, usize), Box<dyn std::error::Error>> {
-    let (forward_graph, reverse_graph) = input.lines().fold((HashMap::new(), HashMap::new()), |(mut forward_graph, mut reverse_graph), line| {
-        let (n1, n2) = line.split(")").next_tuple().expect("malformed line");
-        let node = forward_graph.entry(n1).or_insert(vec![]);
-        (*node).push(n2);
-        let node = reverse_graph.entry(n2).or_insert(vec![]);
-        (*node).push(n1);
-        (forward_graph, reverse_graph)
-    });
+    let (forward_graph, reverse_graph) = input.lines().fold(
+        (HashMap::new(), HashMap::new()),
+        |(mut forward_graph, mut reverse_graph), line| {
+            let (n1, n2) = line.split(")").next_tuple().expect("malformed line");
+            let node = forward_graph.entry(n1).or_insert(vec![]);
+            (*node).push(n2);
+            let node = reverse_graph.entry(n2).or_insert(vec![]);
+            (*node).push(n1);
+            (forward_graph, reverse_graph)
+        },
+    );
 
-    let orbits: usize = forward_graph.values().flatten().map(|&node| {
-        let mut stack = vec![node];
-        let mut count = 0;
-        while let Some(node) = stack.pop() {
-            if let Some(parent) = reverse_graph.get(node) {
-                stack.append(&mut parent.clone());
-                count += 1;
+    let orbits: usize = forward_graph
+        .values()
+        .flatten()
+        .map(|&node| {
+            let mut stack = vec![node];
+            let mut count = 0;
+            while let Some(node) = stack.pop() {
+                if let Some(parent) = reverse_graph.get(node) {
+                    stack.append(&mut parent.clone());
+                    count += 1;
+                }
             }
-        }
-        count
-    }).sum();
+            count
+        })
+        .sum();
 
     let mut visited = HashMap::new();
     visited.insert("YOU", 0);
