@@ -17,9 +17,15 @@ fn main() {
     match input {
         Ok(asteroids) => {
             println!(
-                "Best monitoring station: {}",
+                "Best monitoring station: {:?}",
                 find_best_monitoring_station(&asteroids)
             );
+
+            let asteroid200 =
+                LaserIterator::new(&asteroids, find_best_monitoring_station(&asteroids).0)
+                    .nth(199)
+                    .unwrap();
+            println!("Betting code: {}", 100 * asteroid200.x - asteroid200.y);
         }
         Err(e) => {
             eprintln!("Error while parsing input: {}", e);
