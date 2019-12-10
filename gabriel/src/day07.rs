@@ -12,7 +12,7 @@ fn thruster_signal(program: &str, phase_settings: [isize; 5]) -> isize {
     phase_settings
         .iter()
         .fold(0, |previous_signal, &phase_setting| {
-            run_intcode_computer(program, vec![phase_setting, previous_signal])
+            run_intcode_computer(program, vec![phase_setting, previous_signal])[0]
         })
 }
 
