@@ -1,6 +1,5 @@
 use crate::day09::{execute, parse, Memory};
 use std::collections::HashMap;
-use std::isize::{MAX, MIN};
 
 type Error = Box<dyn std::error::Error>;
 type Result<T> = std::result::Result<T, Error>;
@@ -11,26 +10,7 @@ pub fn solve(input: &str) -> Result<(usize, String)> {
     let part1 = field.len();
 
     let field = paint(mem, 1)?;
-    let (l, r, t, b) = field
-        .iter()
-        .fold((MAX, MIN, MIN, MAX), |(l, r, t, b), (&(x, y), _)| {
-            (l.min(x), r.max(x), t.max(y), b.min(y))
-        });
-    let message: String = (b..=t)
-        .rev()
-        .map(|y| {
-            (l..=r)
-                .map(|x| {
-                    if field.get(&(x, y)) == Some(&1) {
-                        'X'
-                    } else {
-                        ' '
-                    }
-                })
-                .collect()
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
+    let message = into_message(&field);
     println!("{}", message);
 
     Ok((part1, message))
@@ -67,4 +47,28 @@ fn paint(mut mem: Memory, init_color: i64) -> Result<HashMap<Coord, i64>> {
     }
 
     Ok(field)
+}
+
+fn into_message(field: &HashMap<Coord, i64>) -> String {
+    use std::isize::{MAX, MIN};
+    let (l, r, t, b) = field
+        .iter()
+        .fold((MAX, MIN, MIN, MAX), |(l, r, t, b), (&(x, y), _)| {
+            (l.min(x), r.max(x), t.max(y), b.min(y))
+        });
+    (b..=t)
+        .rev()
+        .map(|y| {
+            (l..=r)
+                .map(|x| {
+                    if field.get(&(x, y)) == Some(&1) {
+                        'X'
+                    } else {
+                        ' '
+                    }
+                })
+                .collect()
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
 }
