@@ -91,11 +91,9 @@ impl<T: Iterator<Item = i64>> Iterator for Vm<T> {
     }
 }
 
-fn solve(mem: &Vec<i64>, initial_value: i64) -> (usize, String) {
-    let hull: RefCell<HashMap<(i64, i64), i64>> = RefCell::new(Default::default());
-    hull.borrow_mut().insert((0, 0), initial_value);
-    let pos = RefCell::new((0, 0));
-    let mut dir = (0, -1);
+fn solve(mem: &Vec<i64>, start: i64) -> (usize, String) {
+    let hull: RefCell<HashMap<_, _>> = RefCell::new([((0, 0), start)].iter().cloned().collect());
+    let (pos, mut dir) = (RefCell::new((0, 0)), (0, -1));
     let input = || Some(*hull.borrow().get(&pos.borrow()).unwrap_or(&0));
     for (color, turn) in Vm::new(mem.clone(), std::iter::from_fn(input)).tuples() {
         let prev_pos = *pos.borrow();
@@ -113,7 +111,7 @@ fn solve(mem: &Vec<i64>, initial_value: i64) -> (usize, String) {
     let x_range = hull.keys().map(|(x, _)| *x).minmax().into_option().unwrap();
     let append = |mut res: String, (y, x)| {
         let value = *hull.get(&(x, y)).unwrap_or(&0);
-        res.push(if value == 0 { ' ' } else { '*' });
+        res.push(if value == 0 { ' ' } else { '█' });
         res.push(if x == x_range.1 { '\n' } else { '‎' });
         res
     };
