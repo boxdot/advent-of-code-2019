@@ -13,7 +13,7 @@ pub fn solve(input: &str) -> Result<(i64, i64), Error> {
     Ok((produce_output(1)?, produce_output(2)?))
 }
 
-fn parse(input: &str) -> Memory {
+pub fn parse(input: &str) -> Memory {
     let data = input.split(',').filter_map(|s| s.parse().ok()).collect();
     Memory {
         data,
@@ -22,7 +22,7 @@ fn parse(input: &str) -> Memory {
 }
 
 #[derive(Debug, Clone)]
-struct Memory {
+pub struct Memory {
     data: Vec<i64>,
     relative_base: usize,
 }
@@ -128,7 +128,7 @@ fn fetch(mem: &Memory, ip: usize) -> Result<Op, Error> {
     Ok(op)
 }
 
-fn execute(
+pub fn execute(
     mem: &mut Memory,
     ip: usize,
     mut input: impl FnMut() -> i64,
@@ -193,7 +193,11 @@ fn execute(
     Ok(Some(ip))
 }
 
-fn run(mut mem: Memory, input: &[i64]) -> Result<Vec<i64>, Error> {
+// pub fn run_with_input(mut mem: &Memory, input: i64) -> Result<Vec<i64>, Error> {
+
+// }
+
+pub fn run(mut mem: Memory, input: &[i64]) -> Result<Vec<i64>, Error> {
     let mut input_pos = 0;
     let mut outputs = Vec::new();
 
