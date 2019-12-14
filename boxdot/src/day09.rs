@@ -54,7 +54,7 @@ impl Memory {
         self.data.get(addr).cloned().unwrap_or(0)
     }
 
-    fn write(&mut self, addr: usize, value: i64) {
+    pub fn write(&mut self, addr: usize, value: i64) {
         if addr >= self.data.len() {
             self.data.resize(addr + 1, 0);
         }
