@@ -12,12 +12,12 @@ fn solve(mut number: Vec<u8>, skip: usize) -> String {
         for (i, x) in number.iter().enumerate() {
             prefix[i + 1] = prefix[i] + *x as i32;
         }
-        for length in 1..=number.len() {
+        for length in 1.max(skip)..=number.len() {
             let mut pos = length - 1;
             let mut sum = 0;
-            for mul in [1, 0, -1, 0].iter().cycle() {
+            for mul in [1, -1].iter().cycle() {
                 sum += mul * (prefix[(pos + length).min(number.len())] - prefix[pos]);
-                pos += length;
+                pos += 2 * length;
                 if pos >= number.len() {
                     break;
                 }
