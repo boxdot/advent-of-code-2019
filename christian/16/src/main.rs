@@ -1,27 +1,23 @@
-// use itertools::*;
 use std::io::{self, prelude::*};
 
-fn parse(input: &Vec<String>) -> Vec<u8> {
-    input.first().unwrap().bytes().map(|x| x - b'0').collect()
+fn parse(input: &Vec<String>) -> Vec<i32> {
+    (input.first().unwrap().bytes().map(|x| (x - b'0') as i32)).collect()
 }
 
-fn solve(mut number: Vec<u8>, skip: usize) -> String {
-    let mut prefix = vec![0_i32; number.len() + 1];
-    let mut next = number.clone();
+fn solve(mut number: Vec<i32>, skip: usize) -> String {
+    number.resize(number.len() + 1, 0); // make space for prefix sum's last element
     for _ in 0..100 {
-        for (i, x) in number.iter().enumerate() {
-            prefix[i + 1] = prefix[i] + *x as i32;
-        }
+        (number.iter_mut()).fold(0, |sum, x| sum + std::mem::replace(x, sum));
+        let last = *number.last().unwrap();
         for i in 0..number.len() {
             let mut sum = 0;
-            for pos in (i..prefix.len()).step_by(2 * (i + 1 + skip)) {
-                sum = -sum + prefix[(pos + i + 1 + skip).min(number.len())] - prefix[pos];
+            for pos in (i..number.len()).step_by(2 * (i + 1 + skip)) {
+                sum = -sum + number.get(pos + i + 1 + skip).unwrap_or(&last) - number[pos];
             }
-            next[i] = (sum.abs() % 10) as u8;
+            number[i] = sum.abs() % 10;
         }
-        std::mem::swap(&mut next, &mut number);
     }
-    (number.iter().take(8).map(|x| (x + b'0') as char)).collect()
+    (number.iter().take(8).map(|x| (*x as u8 + b'0') as char)).collect()
 }
 
 fn main() {
