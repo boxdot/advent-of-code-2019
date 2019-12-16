@@ -12,17 +12,12 @@ fn solve(mut number: Vec<u8>, skip: usize) -> String {
         for (i, x) in number.iter().enumerate() {
             prefix[i + 1] = prefix[i] + *x as i32;
         }
-        for length in 1.max(skip)..=number.len() + skip.saturating_sub(1) {
-            let mut pos = length - 1.max(skip);
+        for i in 0..number.len() {
             let mut sum = 0;
-            for mul in [1, -1].iter().cycle() {
-                sum += mul * (prefix[(pos + length).min(number.len())] - prefix[pos]);
-                pos += 2 * length;
-                if pos >= prefix.len() {
-                    break;
-                }
+            for pos in (i..prefix.len()).step_by(2 * (i + 1 + skip)) {
+                sum = -sum + prefix[(pos + i + 1 + skip).min(number.len())] - prefix[pos];
             }
-            next[length - 1.max(skip)] = (sum.abs() % 10) as u8;
+            next[i] = (sum.abs() % 10) as u8;
         }
         std::mem::swap(&mut next, &mut number);
     }
