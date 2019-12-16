@@ -12,27 +12,28 @@ fn solve(mut number: Vec<u8>, skip: usize) -> String {
         for (i, x) in number.iter().enumerate() {
             prefix[i + 1] = prefix[i] + *x as i32;
         }
-        for length in 1.max(skip)..=number.len() {
-            let mut pos = length - 1;
+        for length in 1.max(skip)..=number.len() + skip.saturating_sub(1) {
+            let mut pos = length - 1.max(skip);
             let mut sum = 0;
             for mul in [1, -1].iter().cycle() {
                 sum += mul * (prefix[(pos + length).min(number.len())] - prefix[pos]);
                 pos += 2 * length;
-                if pos >= number.len() {
+                if pos >= prefix.len() {
                     break;
                 }
             }
-            next[length - 1] = (sum.abs() % 10) as u8;
+            next[length - 1.max(skip)] = (sum.abs() % 10) as u8;
         }
         std::mem::swap(&mut next, &mut number);
     }
-    (number.iter().skip(skip).take(8).map(|x| (x + b'0') as char)).collect()
+    (number.iter().take(8).map(|x| (x + b'0') as char)).collect()
 }
 
 fn main() {
     let input = parse(&io::stdin().lock().lines().map(|x| x.unwrap()).collect());
     println!("{:?}", solve(input.clone(), 0));
-    let big = (input.iter().cycle().copied().take(input.len() * 10000)).collect();
     let pos = input.iter().take(7).fold(0, |x, d| x * 10 + *d as usize);
+    let offset_input = input.iter().cycle().skip(pos % input.len());
+    let big = (offset_input.copied().take(input.len() * 10000 - pos)).collect();
     println!("{:?}", solve(big, pos));
 }
