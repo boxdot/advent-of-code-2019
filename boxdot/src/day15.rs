@@ -8,7 +8,7 @@ type Error = Box<dyn std::error::Error>;
 type Result<T> = std::result::Result<T, Error>;
 type Coord = (i64, i64);
 
-pub fn solve(input: &str) -> Result<usize> {
+pub fn solve(input: &str) -> Result<(usize, usize)> {
     let mem = parse(input);
 
     let tiles = collect_tiles(mem)?;
@@ -18,10 +18,12 @@ pub fn solve(input: &str) -> Result<usize> {
         .iter()
         .find_map(|(&pos, &(id, _))| if id == 2 { Some(pos) } else { None })
         .ok_or_else(|| "no oxygen system found")?;
-    let part1 = shortest_path((0, 0), oxygen_system_pos, tiles)
+    let part1 = distance((0, 0), tiles.clone(), |pos| pos == oxygen_system_pos)
         .ok_or_else(|| "no path to oxygen system found")?;
+    let part2 =
+        distance(oxygen_system_pos, tiles, |_| false).ok_or_else(|| "invalid start position")?;
 
-    Ok(part1)
+    Ok((part1, part2))
 }
 
 fn walk(pos: Coord, cmd: i64) -> Coord {
@@ -162,7 +164,7 @@ fn print_tiles(tiles: &Tiles, pos: Coord) {
     println!("{}", s);
 }
 
-fn shortest_path(orig: Coord, dest: Coord, mut tiles: Tiles) -> Option<usize> {
+fn distance(orig: Coord, mut tiles: Tiles, stop_cond: impl Fn(Coord) -> bool) -> Option<usize> {
     // reset visited tiles
     for (_, visited) in tiles.values_mut() {
         *visited = false;
@@ -172,10 +174,12 @@ fn shortest_path(orig: Coord, dest: Coord, mut tiles: Tiles) -> Option<usize> {
     q.push_back((orig, 0));
     tiles.get_mut(&orig)?.1 = true;
 
+    let mut max_dist = 0;
     while let Some((pos, dist)) = q.pop_front() {
-        if pos == dest {
+        if stop_cond(pos) {
             return Some(dist);
         }
+        max_dist = dist;
         for neighbor in neighbors(pos) {
             let (id, seen) = tiles.get_mut(&neighbor)?;
             if *id != 0 && !*seen {
@@ -184,6 +188,5 @@ fn shortest_path(orig: Coord, dest: Coord, mut tiles: Tiles) -> Option<usize> {
             }
         }
     }
-
-    None
+    Some(max_dist)
 }
