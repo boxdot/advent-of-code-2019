@@ -29,8 +29,9 @@ fn main() {
             let mut rng = rand::rngs::StdRng::from_seed([42; 32]);
             loop {
                 let (_, commands) = get_euler_path(&map, &mut rng);
-                println!("{:?}", commands);
-                if pack_strings(&commands) {
+                println!("{:?}", commands.join(","));
+                if let Some(output) = pack_strings(&commands) {
+                    println!("{:?}", output);
                     break;
                 }
             }

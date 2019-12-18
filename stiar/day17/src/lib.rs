@@ -89,6 +89,7 @@ fn is_valid(v: Position, map: &Array2<char>) -> bool {
 
 fn dfs(
     v: Position,
+    dir: Position,
     map: &Array2<char>,
     used: &mut HashSet<(Position, Position)>,
     path: &mut Vec<Position>,
@@ -96,10 +97,7 @@ fn dfs(
 ) {
     let mut dirs = [(0, -1), (-1, 0), (0, 1), (1, 0)];
     dirs.shuffle(&mut rng);
-    for dir in dirs
-        .into_iter()
-        .map(|&(di, dj)| Position::new(di, dj))
-    {
+    for dir in std::iter::once(dir).chain(dirs.into_iter().map(|&(di, dj)| Position::new(di, dj))) {
         let u = v + dir;
         if is_valid(u, map)
             && map[(u.i as usize, u.j as usize)] == '#'
@@ -108,7 +106,7 @@ fn dfs(
         {
             used.insert((v, dir));
             used.insert((u, -dir));
-            dfs(u, map, used, path, rng);
+            dfs(u, dir, map, used, path, rng);
             path.push(v);
         }
     }
@@ -134,7 +132,14 @@ pub fn get_euler_path(
     let mut current_pos = Position::new(start_pos.0 as i64, start_pos.1 as i64);
     let mut used = HashSet::new();
     let mut path = vec![];
-    dfs(current_pos, &map, &mut used, &mut path, &mut rng);
+    dfs(
+        current_pos,
+        Position::new(0, 1),
+        &map,
+        &mut used,
+        &mut path,
+        &mut rng,
+    );
     path.reverse();
 
     let mut current_dir = match map[start_pos] {
@@ -164,6 +169,7 @@ pub fn get_euler_path(
         current_command.amount += 1;
         current_pos = current_pos + current_dir;
     }
+    current_command.amount += 1;
     commands.push(current_command);
 
     (
@@ -172,7 +178,7 @@ pub fn get_euler_path(
     )
 }
 
-pub fn pack_strings(strings: &[String]) -> bool {
+pub fn pack_strings(strings: &[String]) -> Option<(String, String, String, String)> {
     for (l1, r1) in iproduct!(0..=strings.len(), 0..=strings.len()) {
         for (l2, r2) in iproduct!(0..=strings.len(), 0..=strings.len()) {
             for (l3, r3) in iproduct!(0..=strings.len(), 0..=strings.len()) {
@@ -185,10 +191,11 @@ pub fn pack_strings(strings: &[String]) -> bool {
                     if !patterns.iter().all(|x| x.join(",").len() <= 20) {
                         continue;
                     }
+                    let mut result = vec![];
                     let mut index = 0;
                     while index < strings.len() {
                         let mut advanced = false;
-                        for pattern in &patterns {
+                        for (number, pattern) in patterns.iter().enumerate() {
                             if strings[index..]
                                 .iter()
                                 .zip_longest(pattern.iter())
@@ -199,6 +206,12 @@ pub fn pack_strings(strings: &[String]) -> bool {
                                 .all(|(x, y)| x == y)
                                 && index + pattern.len() <= strings.len()
                             {
+                                result.push(match number {
+                                    0 => "A",
+                                    1 => "B",
+                                    2 => "C",
+                                    _ => panic!("WAT"),
+                                });
                                 index += pattern.len();
                                 advanced = true;
                             }
@@ -207,14 +220,17 @@ pub fn pack_strings(strings: &[String]) -> bool {
                             break;
                         }
                     }
-                    if index == strings.len() {
-                        println!("Found!!! {:?}", patterns);
-                        return true;
+                    if index == strings.len() && result.join(",").len() <= 20 {
+                        return Some((
+                            result.join(","),
+                            patterns[0].join(","),
+                            patterns[1].join(","),
+                            patterns[2].join(","),
+                        ));
                     }
                 }
             }
         }
     }
-    println!("Not found :(");
-    false
+    None
 }
