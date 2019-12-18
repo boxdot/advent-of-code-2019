@@ -52,7 +52,7 @@ fn def_to_lines(wire: &str) -> (Vec<Vertical>, Vec<Horizontal>) {
                 });
                 y -= amount;
             }
-            _ => assert!(false),
+            _ => panic!(),
         }
     }
     verticals.sort_by(|a, b| a.y1.cmp(&b.y1));
@@ -61,8 +61,8 @@ fn def_to_lines(wire: &str) -> (Vec<Vertical>, Vec<Horizontal>) {
 }
 
 fn create_intersections(
-    verticals: &Vec<Vertical>,
-    horizontals: &Vec<Horizontal>,
+    verticals: &[Vertical],
+    horizontals: &[Horizontal],
 ) -> Vec<(i32, i32)> {
     let mut dots = Vec::new();
     for line in verticals {
@@ -94,6 +94,7 @@ fn print_horizontal(h: &Horizontal) {
     println!("X:[{},{}], Y:{}", h.x1, h.x2, h.y);
 }
 
+/*
 fn debug_print(vert: &Vec<Vertical>, horiz: &Vec<Horizontal>) {
     println!("V");
     for v in vert {
@@ -110,6 +111,7 @@ fn debug_print_dots(dots: &Vec<(i32, i32)>) {
         println!("{},{}", dot.0, dot.1);
     }
 }
+*/
 
 fn main() {
     let contents = include_str!("day03.txt");

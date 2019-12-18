@@ -1,7 +1,7 @@
 fn main() {
     let contents = include_str!("day02.txt");
     let original: Vec<usize> = contents
-        .split(",")
+        .split(',')
         .map(|x| x.parse::<usize>().unwrap())
         .collect();
     'outer: for noun in 0..100 {
@@ -24,10 +24,10 @@ fn main() {
                 } else if instr == 2 {
                     data[target] = data[x] * data[y];
                 } else {
-                    assert!(false);
+                    panic!();
                 }
             }
-            if data[0] == 19690720 {
+            if data[0] == 19_690_720 {
                 println!("{}", 100 * noun + verb);
                 break 'outer;
             }

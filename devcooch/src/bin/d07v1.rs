@@ -1,4 +1,4 @@
-fn fetch_operands(modes: i32, ip: usize, data: &Vec<i32>) -> (i32, i32) {
+fn fetch_operands(modes: i32, ip: usize, data: &[i32]) -> (i32, i32) {
     let x_mod = modes % 10;
     let y_mod = (modes / 10) % 10;
     assert!(x_mod < 2);
@@ -18,12 +18,12 @@ fn fetch_operands(modes: i32, ip: usize, data: &Vec<i32>) -> (i32, i32) {
 
 fn parse_program(contents: &str) -> Vec<i32> {
     contents
-        .split(",")
+        .split(',')
         .map(|x| x.parse::<i32>().unwrap())
         .collect()
 }
 
-fn execute(mut mem: Vec<i32>, input: &Vec<i32>) -> Vec<i32> {
+fn execute(mut mem: Vec<i32>, input: &[i32]) -> Vec<i32> {
     let mut output = Vec::new();
     let mut ip: usize = 0; // instruction pointer
     let mut dp: usize = 0; // input data pointer
@@ -76,7 +76,7 @@ fn execute(mut mem: Vec<i32>, input: &Vec<i32>) -> Vec<i32> {
                 }
                 ip += 3;
             }
-            _ => assert!(false),
+            _ => panic!(),
         }
     }
     output

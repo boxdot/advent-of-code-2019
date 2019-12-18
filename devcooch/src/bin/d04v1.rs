@@ -9,7 +9,7 @@ fn digits(mut x: u32) -> Vec<u32> {
 }
 
 fn main() {
-    let range = 273025..767253;
+    let range = 273_025..767_253;
     let mut n = 0;
     'outer: for x in range {
         let ds = digits(x);

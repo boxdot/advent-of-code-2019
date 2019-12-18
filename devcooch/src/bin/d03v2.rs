@@ -74,7 +74,7 @@ fn def_to_lines(wire: &str) -> (Vec<Vertical>, Vec<Horizontal>) {
                 });
                 y -= amount;
             }
-            _ => assert!(false),
+            _ => panic!(),
         }
         path += amount;
     }
@@ -84,7 +84,7 @@ fn def_to_lines(wire: &str) -> (Vec<Vertical>, Vec<Horizontal>) {
     (verticals, horizontals)
 }
 
-fn create_intersections(verticals: &Vec<Vertical>, horizontals: &Vec<Horizontal>) -> Vec<Dot> {
+fn create_intersections(verticals: &[Vertical], horizontals: &[Horizontal]) -> Vec<Dot> {
     let mut dots = Vec::new();
     for v in verticals {
         let any_h = horizontals.binary_search_by(|probe| match probe.x1.cmp(&v.x) {
@@ -163,7 +163,7 @@ fn print_dot(d: &Dot) {
     );
 }
 
-fn debug_print(vert: &Vec<Vertical>, horiz: &Vec<Horizontal>) {
+fn debug_print(vert: &[Vertical], horiz: &[Horizontal]) {
     for v in vert {
         print_vertical(&v);
     }
@@ -172,7 +172,7 @@ fn debug_print(vert: &Vec<Vertical>, horiz: &Vec<Horizontal>) {
     }
 }
 
-fn debug_print_dots(dots: &Vec<Dot>) {
+fn debug_print_dots(dots: &[Dot]) {
     for dot in dots {
         print_dot(dot);
     }

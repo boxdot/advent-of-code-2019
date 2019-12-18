@@ -34,14 +34,14 @@ fn test_number(x: u32) -> bool {
     if same_group2 == 0 {
         return false;
     }
-    return true;
+    true
 }
 
 fn main() {
-    assert_eq!(test_number(112233), true);
-    assert_eq!(test_number(123444), false);
-    assert_eq!(test_number(111122), true);
-    let range = 273025..767253;
+    assert_eq!(test_number(112_233), true);
+    assert_eq!(test_number(123_444), false);
+    assert_eq!(test_number(111_122), true);
+    let range = 273_025..767_253;
     let mut n = 0;
     for x in range {
         if test_number(x) {

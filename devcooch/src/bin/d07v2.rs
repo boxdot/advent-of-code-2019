@@ -8,7 +8,7 @@ struct Operands {
     pub y_addr: usize,
 }
 
-fn fetch_operands(modes: i32, ip: usize, data: &Vec<i32>) -> Operands {
+fn fetch_operands(modes: i32, ip: usize, data: &[i32]) -> Operands {
     let mut ops: Operands = Default::default();
     ops.x_mode = modes % 10;
     ops.y_mode = (modes / 10) % 10;
@@ -31,7 +31,7 @@ fn fetch_operands(modes: i32, ip: usize, data: &Vec<i32>) -> Operands {
 
 fn parse_program(contents: &str) -> Vec<i32> {
     contents
-        .split(",")
+        .split(',')
         .map(|x| x.parse::<i32>().unwrap())
         .collect()
 }
@@ -124,7 +124,7 @@ fn execute(
                 info!("HLT");
                 return true;
             }
-            _ => assert!(false),
+            _ => panic!(),
         }
     }
 }
@@ -184,7 +184,7 @@ fn main() {
     let mut five_to_nine = (5..10).collect::<Vec<i32>>();
     let permutations = Heap::new(&mut five_to_nine);
     let mut signals = Vec::new();
-    'outer: for phases in permutations {
+    for phases in permutations {
         let mut amps = prepare_amps(phases, &program);
         let mut ap = 0; // amplifier pointer
         let mut halt = false;

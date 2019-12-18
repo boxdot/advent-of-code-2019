@@ -1,7 +1,7 @@
 fn main() {
     let contents = include_str!("day02.txt");
     let mut data: Vec<usize> = contents
-        .split(",")
+        .split(',')
         .map(|x| x.parse::<usize>().unwrap())
         .collect();
     data[1] = 12;
@@ -21,7 +21,7 @@ fn main() {
         } else if instr == 2 {
             data[target] = data[x] * data[y];
         } else {
-            assert!(false);
+            panic!();
         }
     }
     println!("{}", data[0]);

@@ -17,6 +17,6 @@ fn main() {
         for c in line {
             print!("{}", if *c == '0' { '.' } else { '█' });
         }
-        println!("");
+        println!();
     }
 }

@@ -1,4 +1,4 @@
-fn fetch_operands(modes: i32, ip: usize, data: &Vec<i32>) -> (i32, i32) {
+fn fetch_operands(modes: i32, ip: usize, data: &[i32]) -> (i32, i32) {
     let x_mod = modes % 10;
     let y_mod = (modes / 10) % 10;
     assert!(x_mod < 2);
@@ -19,7 +19,7 @@ fn fetch_operands(modes: i32, ip: usize, data: &Vec<i32>) -> (i32, i32) {
 fn main() {
     let contents = include_str!("day05.txt");
     let mut data: Vec<i32> = contents
-        .split(",")
+        .split(',')
         .map(|x| x.parse::<i32>().unwrap())
         .collect();
     let mut i: usize = 0;
@@ -37,7 +37,7 @@ fn main() {
                 } else if opcode == 2 {
                     data[target] = x * y;
                 } else {
-                    assert!(false);
+                    panic!();
                 }
                 i += 4;
             }
@@ -50,7 +50,7 @@ fn main() {
                 println!("OUT>{}", data[data[i + 1] as usize]);
                 i += 2;
             }
-            _ => assert!(false),
+            _ => panic!(),
         }
     }
 }

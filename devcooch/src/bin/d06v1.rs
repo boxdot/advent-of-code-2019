@@ -4,7 +4,7 @@ fn main() {
     let contents = include_str!("day06.txt");
     let pairs: Vec<_> = contents
         .lines()
-        .map(|l| l.split(")"))
+        .map(|l| l.split(')'))
         .map(|mut s| (s.next().unwrap(), s.next().unwrap()))
         .collect();
     let rel: HashMap<&str, &str> = pairs.iter().cloned().map(|(x, y)| (y, x)).collect();
