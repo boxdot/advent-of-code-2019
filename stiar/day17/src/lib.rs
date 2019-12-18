@@ -5,10 +5,13 @@ use intcode::*;
 #[macro_use]
 extern crate itertools;
 use derive_more::{Add, Neg, Sub};
+use itertools::EitherOrBoth::Both;
+use itertools::Itertools;
 use ndarray::{Array1, Array2};
+use rand::seq::SliceRandom;
 
 use std::collections::HashSet;
-use std::fmt::Write;
+use std::fmt::{self, Write};
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, Add, Sub, Neg)]
 pub struct Position {
@@ -23,15 +26,29 @@ impl Position {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub enum Turn {
+enum Turn {
     Left,
     Right,
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Command {
+struct Command {
     pub turn: Turn,
     pub amount: u32,
+}
+
+impl fmt::Display for Command {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{},{}",
+            match self.turn {
+                Turn::Left => "L",
+                Turn::Right => "R",
+            },
+            self.amount
+        )
+    }
 }
 
 pub fn extract_map(program: Vec<i64>, print: bool) -> Array2<char> {
@@ -75,8 +92,11 @@ fn dfs(
     map: &Array2<char>,
     used: &mut HashSet<(Position, Position)>,
     path: &mut Vec<Position>,
+    mut rng: &mut impl rand::RngCore,
 ) {
-    for dir in [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    let mut dirs = [(0, -1), (-1, 0), (0, 1), (1, 0)];
+    dirs.shuffle(&mut rng);
+    for dir in dirs
         .into_iter()
         .map(|&(di, dj)| Position::new(di, dj))
     {
@@ -88,7 +108,7 @@ fn dfs(
         {
             used.insert((v, dir));
             used.insert((u, -dir));
-            dfs(u, map, used, path);
+            dfs(u, map, used, path, rng);
             path.push(v);
         }
     }
@@ -103,7 +123,10 @@ fn get_turn(old_dir: Position, new_dir: Position) -> Turn {
     }
 }
 
-pub fn get_euler_path(map: &Array2<char>) -> (Vec<Position>, Vec<Command>) {
+pub fn get_euler_path(
+    map: &Array2<char>,
+    mut rng: &mut impl rand::RngCore,
+) -> (Vec<Position>, Vec<String>) {
     let start_pos = iproduct!(0..map.nrows(), 0..map.ncols())
         .find(|&pos| map[pos] != '.' && map[pos] != '#')
         .unwrap();
@@ -111,7 +134,7 @@ pub fn get_euler_path(map: &Array2<char>) -> (Vec<Position>, Vec<Command>) {
     let mut current_pos = Position::new(start_pos.0 as i64, start_pos.1 as i64);
     let mut used = HashSet::new();
     let mut path = vec![];
-    dfs(current_pos, &map, &mut used, &mut path);
+    dfs(current_pos, &map, &mut used, &mut path, &mut rng);
     path.reverse();
 
     let mut current_dir = match map[start_pos] {
@@ -127,19 +150,6 @@ pub fn get_euler_path(map: &Array2<char>) -> (Vec<Position>, Vec<Command>) {
     };
     let mut commands = vec![];
     for &position in path.iter().skip(1) {
-        //let mut map_copy = map.clone();
-        //map_copy[(position.i as usize, position.j as usize)] = '*';
-        //for row in map_copy.genrows().into_iter() {
-        //    println!(
-        //        "{}",
-        //        row.iter()
-        //            .map(|x| x.to_string())
-        //            .collect::<Vec<String>>()
-        //            .join("")
-        //    );
-        //}
-        //println!("");
-
         let new_dir = position - current_pos;
         if new_dir != current_dir {
             if current_command.amount > 0 {
@@ -156,5 +166,55 @@ pub fn get_euler_path(map: &Array2<char>) -> (Vec<Position>, Vec<Command>) {
     }
     commands.push(current_command);
 
-    (path, commands)
+    (
+        path,
+        commands.into_iter().map(|cmd| cmd.to_string()).collect(),
+    )
+}
+
+pub fn pack_strings(strings: &[String]) -> bool {
+    for (l1, r1) in iproduct!(0..=strings.len(), 0..=strings.len()) {
+        for (l2, r2) in iproduct!(0..=strings.len(), 0..=strings.len()) {
+            for (l3, r3) in iproduct!(0..=strings.len(), 0..=strings.len()) {
+                if l1 < r1 && r1 <= l2 && l2 < r2 && r2 <= l3 && l3 < r3 {
+                    let patterns = [
+                        strings[l1..r1].to_vec(),
+                        strings[l2..r2].to_vec(),
+                        strings[l3..r3].to_vec(),
+                    ];
+                    if !patterns.iter().all(|x| x.join(",").len() <= 20) {
+                        continue;
+                    }
+                    let mut index = 0;
+                    while index < strings.len() {
+                        let mut advanced = false;
+                        for pattern in &patterns {
+                            if strings[index..]
+                                .iter()
+                                .zip_longest(pattern.iter())
+                                .filter_map(|pair| match pair {
+                                    Both(x, y) => Some((x, y)),
+                                    _ => None,
+                                })
+                                .all(|(x, y)| x == y)
+                                && index + pattern.len() <= strings.len()
+                            {
+                                index += pattern.len();
+                                advanced = true;
+                            }
+                        }
+                        if !advanced {
+                            break;
+                        }
+                    }
+                    if index == strings.len() {
+                        println!("Found!!! {:?}", patterns);
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    println!("Not found :(");
+    false
 }

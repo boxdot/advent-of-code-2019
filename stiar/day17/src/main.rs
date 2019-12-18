@@ -1,5 +1,7 @@
 use day17::*;
 
+use rand::{self, SeedableRng};
+
 use std::io;
 use std::process;
 
@@ -24,8 +26,14 @@ fn main() {
         Ok(program) => {
             let map = extract_map(program.clone(), true);
             println!("Aligment: {}", calculate_alignment(&map));
-            let (_, commands) = get_euler_path(&map);
-            println!("{:?}", commands);
+            let mut rng = rand::rngs::StdRng::from_seed([42; 32]);
+            loop {
+                let (_, commands) = get_euler_path(&map, &mut rng);
+                println!("{:?}", commands);
+                if pack_strings(&commands) {
+                    break;
+                }
+            }
         }
         Err(e) => {
             eprintln!("Error while parsing input: {}", e);
