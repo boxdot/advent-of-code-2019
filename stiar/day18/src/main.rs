@@ -17,7 +17,7 @@ fn main() {
         Ok(map) => {
             println!(
                 "Shortest path: {:?}",
-                get_traveling_salesman(&map)
+                get_traveling_salesmans(&map)
             );
         }
         Err(e) => {

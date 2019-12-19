@@ -115,7 +115,7 @@ fn bfs(map: &Array2<Kind>, start: &Position, keys_goal: usize) -> Option<u32> {
     while !queue.is_empty() {
         let (position, keys, distance) = queue.pop_front().unwrap();
         if keys.len() == keys_goal {
-            return Some(distance)
+            return Some(distance);
         }
 
         match map[(position.i as usize, position.j as usize)] {
@@ -125,7 +125,7 @@ fn bfs(map: &Array2<Kind>, start: &Position, keys_goal: usize) -> Option<u32> {
                 let new_set = sort_string(keys_copy);
                 queue.push_back((position, new_set.clone(), distance));
                 used.insert((position, new_set));
-            },
+            }
             _ => {
                 for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
                     .into_iter()
@@ -149,13 +149,178 @@ fn bfs(map: &Array2<Kind>, start: &Position, keys_goal: usize) -> Option<u32> {
             }
         }
     }
-    
+
+    None
+}
+
+fn bfs4(
+    map: &Array2<Kind>,
+    starts: &(Position, Position, Position, Position),
+    keys_goal: usize,
+) -> Option<u32> {
+    let mut used = HashSet::new();
+    let mut queue = VecDeque::new();
+    queue.push_back((*starts, "".to_string(), 0));
+    used.insert((*starts, "".to_string()));
+
+    while !queue.is_empty() {
+        let (positions, keys, distance) = queue.pop_front().unwrap();
+        if keys.len() == keys_goal {
+            return Some(distance);
+        }
+
+        match map[(positions.0.i as usize, positions.0.j as usize)] {
+            Kind::Key(k) if !keys.chars().find(|&key| key == k).is_some() => {
+                let mut keys_copy = keys.clone();
+                keys_copy.push(k);
+                let new_set = sort_string(keys_copy);
+                queue.push_back((positions, new_set.clone(), distance));
+                used.insert((positions, new_set));
+            }
+            _ => {
+                for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                    .into_iter()
+                    .map(|&(di, dj)| Position::new(di, dj))
+                {
+                    let new_positions = (positions.0 + dir, positions.1, positions.2, positions.3);
+                    if is_valid(&new_positions.0, map)
+                        && !used.contains(&(new_positions, keys.clone()))
+                        && match map[(new_positions.0.i as usize, new_positions.0.j as usize)] {
+                            Kind::Empty => true,
+                            Kind::Key(_) => true,
+                            Kind::Entrance => true,
+                            Kind::Door(w) => keys.chars().find(|&key| key == w).is_some(),
+                            Kind::Wall => false,
+                        }
+                    {
+                        used.insert((new_positions, keys.clone()));
+                        queue.push_back((new_positions, keys.clone(), distance + 1));
+                    }
+                }
+            }
+        }
+
+        match map[(positions.1.i as usize, positions.1.j as usize)] {
+            Kind::Key(k) if !keys.chars().find(|&key| key == k).is_some() => {
+                let mut keys_copy = keys.clone();
+                keys_copy.push(k);
+                let new_set = sort_string(keys_copy);
+                queue.push_back((positions, new_set.clone(), distance));
+                used.insert((positions, new_set));
+            }
+            _ => {
+                for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                    .into_iter()
+                    .map(|&(di, dj)| Position::new(di, dj))
+                {
+                    let new_positions = (positions.0, positions.1 + dir, positions.2, positions.3);
+                    if is_valid(&new_positions.1, map)
+                        && !used.contains(&(new_positions, keys.clone()))
+                        && match map[(new_positions.1.i as usize, new_positions.1.j as usize)] {
+                            Kind::Empty => true,
+                            Kind::Key(_) => true,
+                            Kind::Entrance => true,
+                            Kind::Door(w) => keys.chars().find(|&key| key == w).is_some(),
+                            Kind::Wall => false,
+                        }
+                    {
+                        used.insert((new_positions, keys.clone()));
+                        queue.push_back((new_positions, keys.clone(), distance + 1));
+                    }
+                }
+            }
+        }
+
+        match map[(positions.2.i as usize, positions.2.j as usize)] {
+            Kind::Key(k) if !keys.chars().find(|&key| key == k).is_some() => {
+                let mut keys_copy = keys.clone();
+                keys_copy.push(k);
+                let new_set = sort_string(keys_copy);
+                queue.push_back((positions, new_set.clone(), distance));
+                used.insert((positions, new_set));
+            }
+            _ => {
+                for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                    .into_iter()
+                    .map(|&(di, dj)| Position::new(di, dj))
+                {
+                    let new_positions = (positions.0, positions.1, positions.2 + dir, positions.3);
+                    if is_valid(&new_positions.2, map)
+                        && !used.contains(&(new_positions, keys.clone()))
+                        && match map[(new_positions.2.i as usize, new_positions.2.j as usize)] {
+                            Kind::Empty => true,
+                            Kind::Key(_) => true,
+                            Kind::Entrance => true,
+                            Kind::Door(w) => keys.chars().find(|&key| key == w).is_some(),
+                            Kind::Wall => false,
+                        }
+                    {
+                        used.insert((new_positions, keys.clone()));
+                        queue.push_back((new_positions, keys.clone(), distance + 1));
+                    }
+                }
+            }
+        }
+
+        match map[(positions.3.i as usize, positions.3.j as usize)] {
+            Kind::Key(k) if !keys.chars().find(|&key| key == k).is_some() => {
+                let mut keys_copy = keys.clone();
+                keys_copy.push(k);
+                let new_set = sort_string(keys_copy);
+                queue.push_back((positions, new_set.clone(), distance));
+                used.insert((positions, new_set));
+            }
+            _ => {
+                for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                    .into_iter()
+                    .map(|&(di, dj)| Position::new(di, dj))
+                {
+                    let new_positions = (positions.0, positions.1, positions.2, positions.3 + dir);
+                    if is_valid(&new_positions.3, map)
+                        && !used.contains(&(new_positions, keys.clone()))
+                        && match map[(new_positions.3.i as usize, new_positions.3.j as usize)] {
+                            Kind::Empty => true,
+                            Kind::Key(_) => true,
+                            Kind::Entrance => true,
+                            Kind::Door(w) => keys.chars().find(|&key| key == w).is_some(),
+                            Kind::Wall => false,
+                        }
+                    {
+                        used.insert((new_positions, keys.clone()));
+                        queue.push_back((new_positions, keys.clone(), distance + 1));
+                    }
+                }
+            }
+        }
+    }
+
     None
 }
 
 pub fn get_traveling_salesman(map: &Array2<Kind>) -> Option<u32> {
     let pois = get_pois(&map);
     bfs(&map, &pois.entrance.position, pois.keys.len())
+}
+
+pub fn get_traveling_salesmans(map: &Array2<Kind>) -> Option<u32> {
+    let entrances: Vec<_> = iproduct!(0..map.nrows(), 0..map.ncols())
+        .map(|x| Cell::new(Position::new(x.0 as i64, x.1 as i64), map[x]))
+        .filter_map(|c| match c.kind {
+            Kind::Entrance => Some(c.position),
+            _ => None,
+        })
+        .collect();
+    bfs4(
+        &map,
+        &(entrances[0], entrances[1], entrances[2], entrances[3]),
+        iproduct!(0..map.nrows(), 0..map.ncols())
+            .map(|x| Cell::new(Position::new(x.0 as i64, x.1 as i64), map[x]))
+            .filter_map(|c| match c.kind {
+                Kind::Key(_) => Some(c),
+                _ => None,
+            })
+            .count(),
+    )
 }
 
 #[cfg(test)]
@@ -223,5 +388,49 @@ mod tests {
 ########################",
         );
         assert_eq!(get_traveling_salesman(&map), Some(81));
+    }
+
+    #[test]
+    fn sample_test_6() {
+        let map = parse_map(
+            "#######
+#a.#Cd#
+##@#@##
+#######
+##@#@##
+#cB#Ab#
+#######",
+        );
+        assert_eq!(get_traveling_salesmans(&map), Some(8));
+    }
+
+    #[test]
+    fn sample_test_7() {
+        let map = parse_map(
+            "#############
+#DcBa.#.GhKl#
+#.###@#@#I###
+#e#d#####j#k#
+###C#@#@###J#
+#fEbA.#.FgHi#
+#############",
+        );
+        assert_eq!(get_traveling_salesmans(&map), Some(32));
+    }
+
+    #[test]
+    fn sample_test_8() {
+        let map = parse_map(
+            "#############
+#g#f.D#..h#l#
+#F###e#E###.#
+#dCba@#@BcIJ#
+#############
+#nK.L@#@G...#
+#M###N#H###.#
+#o#m..#i#jk.#
+#############",
+        );
+        assert_eq!(get_traveling_salesmans(&map), Some(72));
     }
 }
