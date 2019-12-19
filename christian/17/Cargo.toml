@@ -10,3 +10,4 @@ text_io = "0.1.7"
 cgmath = "0.17.0"
 termion = "1.5.4"
 permutator = "0.3.3"
+vm = { path = "../vm" }

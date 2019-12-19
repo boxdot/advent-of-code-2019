@@ -1,28 +1,21 @@
 use itertools::*;
 use std::io::{self, prelude::*};
+use vm::Vm;
 
-fn parse(input: &Vec<String>) -> Vec<usize> {
+fn parse(input: &Vec<String>) -> Vec<i64> {
     let ints = input.iter().map(|x| x.split(',')).flatten();
     ints.filter_map(|x| x.parse().ok()).collect()
 }
 
-fn solve1(mem: &mut [usize], noun: usize, verb: usize) -> Result<usize, ()> {
+fn solve1(mem: &mut [i64], noun: i64, verb: i64) -> Option<i64> {
     mem[1] = noun;
     mem[2] = verb;
-    for pos in (0..mem.len()).step_by(4) {
-        match mem[pos] {
-            01 => mem[mem[pos + 3]] = mem[mem[pos + 1]] + mem[mem[pos + 2]],
-            02 => mem[mem[pos + 3]] = mem[mem[pos + 1]] * mem[mem[pos + 2]],
-            99 => return Ok(mem[0]),
-            _ => return Err(()),
-        };
-    }
-    Err(())
+    Vm::new(mem.into(), [].iter().copied()).next()
 }
 
-fn solve2(input: Vec<usize>, result: usize) -> Option<(usize, usize)> {
+fn solve2(input: Vec<i64>, result: i64) -> Option<(i64, i64)> {
     iproduct!(0..100, 0..100)
-        .find(|&(noun, verb)| solve1(&mut input.clone(), noun, verb) == Ok(result))
+        .find(|&(noun, verb)| solve1(&mut input.clone(), noun, verb) == Some(result))
 }
 
 fn main() {
