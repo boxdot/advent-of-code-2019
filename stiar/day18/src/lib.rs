@@ -1,10 +1,9 @@
 #[macro_use]
 extern crate itertools;
 use derive_more::{Add, Neg, Sub};
-use itertools::Itertools;
 use ndarray::{Array1, Array2};
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashSet, VecDeque};
 use std::convert::From;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -54,6 +53,7 @@ impl From<char> for Kind {
 }
 
 pub fn parse_map(input: &str) -> Array2<Kind> {
+    println!("{}", input);
     let vec: Vec<Vec<Kind>> = input
         .trim()
         .split('\n')
@@ -100,94 +100,62 @@ fn is_valid(v: &Position, map: &Array2<Kind>) -> bool {
     v.i >= 0 && (v.i as usize) < map.nrows() && v.j >= 0 && (v.j as usize) < map.ncols()
 }
 
-pub fn get_traveling_salesman_path(
-    map: &Array2<Kind>,
-    start: &Position,
-    stops: &[Position],
-) -> Option<u32> {
-    //println!("Stops: {:?}", stops);
-    let mut keys = HashSet::new();
+fn sort_string(string: String) -> String {
+    let mut chars: Vec<_> = string.chars().collect();
+    chars.sort();
+    chars.into_iter().collect()
+}
 
-    let mut total_distance = 0;
+fn bfs(map: &Array2<Kind>, start: &Position, keys_goal: usize) -> Option<u32> {
+    let mut used = HashSet::new();
+    let mut queue = VecDeque::new();
+    queue.push_back((*start, "".to_string(), 0));
+    used.insert((*start, "".to_string()));
 
-    let mut current_start = start.clone();
-    for stop in stops {
-        let mut used = HashSet::new();
-        let mut queue = VecDeque::new();
-        queue.push_back((current_start, 0));
-        used.insert(current_start);
+    while !queue.is_empty() {
+        let (position, keys, distance) = queue.pop_front().unwrap();
+        if keys.len() == keys_goal {
+            return Some(distance)
+        }
 
-        let mut found = false;
-        while !queue.is_empty() {
-            let (position, distance) = queue.pop_front().unwrap();
-
-            match map[(position.i as usize, position.j as usize)] {
-                Kind::Key(k) => {
-                    keys.insert(k);
-                }
-                _ => (),
-            };
-
-            if position == *stop {
-                total_distance += distance;
-                found = true;
-                break;
-            }
-
-            for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
-                .into_iter()
-                .map(|&(di, dj)| Position::new(di, dj))
-            {
-                let new_position = position + dir;
-                if is_valid(&new_position, map)
-                    && !used.contains(&new_position)
-                    && match map[(new_position.i as usize, new_position.j as usize)] {
-                        Kind::Empty => true,
-                        Kind::Key(_) => true,
-                        Kind::Entrance => true,
-                        Kind::Door(w) => keys.contains(&w),
-                        Kind::Wall => false,
-                    }
+        match map[(position.i as usize, position.j as usize)] {
+            Kind::Key(k) if !keys.chars().find(|&key| key == k).is_some() => {
+                let mut keys_copy = keys.clone();
+                keys_copy.push(k);
+                let new_set = sort_string(keys_copy);
+                queue.push_back((position, new_set.clone(), distance));
+                used.insert((position, new_set));
+            },
+            _ => {
+                for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                    .into_iter()
+                    .map(|&(di, dj)| Position::new(di, dj))
                 {
-                    used.insert(new_position);
-                    queue.push_back((new_position, distance + 1));
+                    let new_position = position + dir;
+                    if is_valid(&new_position, map)
+                        && !used.contains(&(new_position, keys.clone()))
+                        && match map[(new_position.i as usize, new_position.j as usize)] {
+                            Kind::Empty => true,
+                            Kind::Key(_) => true,
+                            Kind::Entrance => true,
+                            Kind::Door(w) => keys.chars().find(|&key| key == w).is_some(),
+                            Kind::Wall => false,
+                        }
+                    {
+                        used.insert((new_position, keys.clone()));
+                        queue.push_back((new_position, keys.clone(), distance + 1));
+                    }
                 }
             }
         }
-
-        if !found {
-            return None;
-        }
-
-        current_start = *stop;
     }
-
-    Some(total_distance)
+    
+    None
 }
 
 pub fn get_traveling_salesman(map: &Array2<Kind>) -> Option<u32> {
     let pois = get_pois(&map);
-    let mut result = None;
-    for keys in pois.keys.iter().permutations(pois.keys.len()) {
-        let distance_opt = get_traveling_salesman_path(
-            &map,
-            &pois.entrance.position,
-            &keys.iter().map(|x| x.position).collect::<Vec<_>>(),
-        );
-        if let Some(distance) = distance_opt {
-            match result {
-                Some(res) => {
-                    if distance < res {
-                        result = distance_opt;
-                    }
-                }
-                None => {
-                    result = distance_opt;
-                }
-            }
-        }
-    }
-    result
+    bfs(&map, &pois.entrance.position, pois.keys.len())
 }
 
 #[cfg(test)]
