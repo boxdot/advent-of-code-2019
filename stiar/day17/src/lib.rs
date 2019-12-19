@@ -234,3 +234,36 @@ pub fn pack_strings(strings: &[String]) -> Option<(String, String, String, Strin
     }
     None
 }
+
+pub fn run_robot(
+    mut program: Vec<i64>,
+    main_cmd: &str,
+    a_cmd: &str,
+    b_cmd: &str,
+    c_cmd: &str,
+    simulate: bool,
+) -> Option<i64> {
+    program[0] = 2;
+    let mut inputs = vec![];
+    inputs.append(&mut main_cmd.chars().map(|c| c as i64).collect::<Vec<_>>());
+    inputs.push(10);
+    inputs.append(&mut a_cmd.chars().map(|c| c as i64).collect::<Vec<_>>());
+    inputs.push(10);
+    inputs.append(&mut b_cmd.chars().map(|c| c as i64).collect::<Vec<_>>());
+    inputs.push(10);
+    inputs.append(&mut c_cmd.chars().map(|c| c as i64).collect::<Vec<_>>());
+    inputs.push(10);
+    inputs.push(if simulate { 'y' } else { 'n' } as i64);
+    inputs.push(10);
+
+    if simulate {
+        let mut s = String::new();
+        for output in Program::new(program).run(inputs.into_iter()) {
+            write!(&mut s, "{}", output as u8 as char).unwrap();
+        }
+        println!("{}", s);
+        None
+    } else {
+        Program::new(program).run(inputs.into_iter()).last()
+    }
+}
