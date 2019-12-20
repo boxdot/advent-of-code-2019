@@ -178,118 +178,52 @@ fn bfs(map: &Array2<Kind>, start: &Position, keys_goal: usize) -> Option<u32> {
     None
 }
 
-fn bfs4(
-    map: &Array2<Kind>,
-    starts: &(Position, Position, Position, Position),
-    keys_goal: usize,
-) -> Option<u32> {
+fn bfs4(map: &Array2<Kind>, starts: &[Position; 4], keys_goal: usize) -> Option<u32> {
     let mut used = HashSet::new();
     let mut queue = VecDeque::new();
-    queue.push_back((*starts, 0, 0));
-    used.insert((*starts, 0));
+
+    for robot in 0..4 {
+        queue.push_back((*starts, robot, 0, 0));
+        used.insert((*starts, robot, 0));
+    }
 
     while !queue.is_empty() {
-        let (positions, keys, distance) = queue.pop_front().unwrap();
+        let (positions, robot, keys, distance) = queue.pop_front().unwrap();
         if keys == (1 << keys_goal) - 1 {
             return Some(distance);
         }
 
-        let mut useless = false;
-        for position in &[positions.0, positions.1, positions.2, positions.3] {
-            match map[(position.i as usize, position.j as usize)] {
-                Kind::Key(k) if !get_bit(keys, get_char_index(k)) => {
-                    let keys_copy = set_bit(keys, get_char_index(k));
-                    queue.push_back((positions, keys_copy, distance));
-                    used.insert((positions, keys_copy));
-                    useless = true;
-                    break;
+        let position = positions[robot];
+        match map[(position.i as usize, position.j as usize)] {
+            Kind::Key(k) if !get_bit(keys, get_char_index(k)) => {
+                let keys_copy = set_bit(keys, get_char_index(k));
+                for new_robot in 0..4 {
+                    queue.push_back((positions, new_robot, keys_copy, distance));
+                    used.insert((positions, new_robot, keys_copy));
                 }
-                _ => (),
             }
-        }
-
-        if useless {
-            continue;
-        }
-
-        // TODO: Fix this monster.
-        for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
-            .into_iter()
-            .map(|&(di, dj)| Position::new(di, dj))
-        {
-            let new_positions = (positions.0 + dir, positions.1, positions.2, positions.3);
-            if is_valid(&new_positions.0, map)
-                && !used.contains(&(new_positions, keys.clone()))
-                && match map[(new_positions.0.i as usize, new_positions.0.j as usize)] {
-                    Kind::Empty => true,
-                    Kind::Key(_) => true,
-                    Kind::Entrance => true,
-                    Kind::Door(w) => get_bit(keys, get_char_index(w)),
-                    Kind::Wall => false,
+            _ => {
+                for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                    .into_iter()
+                    .map(|&(di, dj)| Position::new(di, dj))
+                {
+                    let mut new_positions = positions.clone();
+                    new_positions[robot] = new_positions[robot] + dir;
+                    let new_position = new_positions[robot];
+                    if is_valid(&new_position, map)
+                        && !used.contains(&(new_positions, robot, keys.clone()))
+                        && match map[(new_position.i as usize, new_position.j as usize)] {
+                            Kind::Empty => true,
+                            Kind::Key(_) => true,
+                            Kind::Entrance => true,
+                            Kind::Door(w) => get_bit(keys, get_char_index(w)),
+                            Kind::Wall => false,
+                        }
+                    {
+                        used.insert((new_positions, robot, keys.clone()));
+                        queue.push_back((new_positions, robot, keys.clone(), distance + 1));
+                    }
                 }
-            {
-                used.insert((new_positions, keys.clone()));
-                queue.push_back((new_positions, keys.clone(), distance + 1));
-            }
-        }
-
-        for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
-            .into_iter()
-            .map(|&(di, dj)| Position::new(di, dj))
-        {
-            let new_positions = (positions.0, positions.1 + dir, positions.2, positions.3);
-            if is_valid(&new_positions.1, map)
-                && !used.contains(&(new_positions, keys.clone()))
-                && match map[(new_positions.1.i as usize, new_positions.1.j as usize)] {
-                    Kind::Empty => true,
-                    Kind::Key(_) => true,
-                    Kind::Entrance => true,
-                    Kind::Door(w) => get_bit(keys, get_char_index(w)),
-                    Kind::Wall => false,
-                }
-            {
-                used.insert((new_positions, keys.clone()));
-                queue.push_back((new_positions, keys.clone(), distance + 1));
-            }
-        }
-
-        for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
-            .into_iter()
-            .map(|&(di, dj)| Position::new(di, dj))
-        {
-            let new_positions = (positions.0, positions.1, positions.2 + dir, positions.3);
-            if is_valid(&new_positions.2, map)
-                && !used.contains(&(new_positions, keys.clone()))
-                && match map[(new_positions.2.i as usize, new_positions.2.j as usize)] {
-                    Kind::Empty => true,
-                    Kind::Key(_) => true,
-                    Kind::Entrance => true,
-                    Kind::Door(w) => get_bit(keys, get_char_index(w)),
-                    Kind::Wall => false,
-                }
-            {
-                used.insert((new_positions, keys.clone()));
-                queue.push_back((new_positions, keys.clone(), distance + 1));
-            }
-        }
-
-        for dir in [(0, 1), (1, 0), (0, -1), (-1, 0)]
-            .into_iter()
-            .map(|&(di, dj)| Position::new(di, dj))
-        {
-            let new_positions = (positions.0, positions.1, positions.2, positions.3 + dir);
-            if is_valid(&new_positions.3, map)
-                && !used.contains(&(new_positions, keys.clone()))
-                && match map[(new_positions.3.i as usize, new_positions.3.j as usize)] {
-                    Kind::Empty => true,
-                    Kind::Key(_) => true,
-                    Kind::Entrance => true,
-                    Kind::Door(w) => get_bit(keys, get_char_index(w)),
-                    Kind::Wall => false,
-                }
-            {
-                used.insert((new_positions, keys.clone()));
-                queue.push_back((new_positions, keys.clone(), distance + 1));
             }
         }
     }
@@ -347,7 +281,7 @@ pub fn get_traveling_salesmans(map: &Array2<Kind>) -> Option<u32> {
 
     bfs4(
         &pruned,
-        &(entrances[0], entrances[1], entrances[2], entrances[3]),
+        &[entrances[0], entrances[1], entrances[2], entrances[3]],
         iproduct!(0..map.nrows(), 0..map.ncols())
             .filter(|&x| match map[x] {
                 Kind::Key(_) => true,
