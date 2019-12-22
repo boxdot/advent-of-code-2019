@@ -1,4 +1,5 @@
 use num_integer::lcm;
+use std::cmp::Ordering;
 use std::collections::{hash_map::Entry, HashMap};
 
 pub fn solve(input: &str) -> (i64, usize) {
@@ -46,12 +47,17 @@ fn simulate_motion_for_axis(
         let mut vel = *vel;
         for i in 0..4 {
             for j in i + 1..4 {
-                if pos[i] < pos[j] {
-                    vel[i] += 1;
-                    vel[j] -= 1;
-                } else if pos[i] > pos[j] {
-                    vel[i] -= 1;
-                    vel[j] += 1;
+                match pos[i].cmp(&pos[j]) {
+                    Ordering::Less => {
+                        vel[i] += 1;
+                        vel[j] -= 1;
+                    }
+
+                    Ordering::Greater => {
+                        vel[i] -= 1;
+                        vel[j] += 1;
+                    }
+                    Ordering::Equal => {}
                 }
             }
         }

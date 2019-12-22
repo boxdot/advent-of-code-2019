@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 pub fn solve(input: &str) -> (usize, usize) {
@@ -75,12 +76,10 @@ fn optimal_fuel(rules: &Rules) -> usize {
     while min + 1 < max {
         let mid = (min + max) / 2;
         let ore = ore(rules, mid);
-        if ore < MAX_ORE {
-            min = mid;
-        } else if ore > MAX_ORE {
-            max = mid;
-        } else {
-            return mid;
+        match ore.cmp(&MAX_ORE) {
+            Ordering::Less => min = mid,
+            Ordering::Greater => max = mid,
+            Ordering::Equal => return mid,
         }
     }
     min
