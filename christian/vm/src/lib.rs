@@ -48,35 +48,42 @@ impl<T: Iterator<Item = i64>> Vm<T> {
     fn inc(&mut self, num: usize) {
         self.ip += num;
     }
+
+    pub fn single_step(&mut self) -> Option<Option<i64>> {
+        match self.data[self.ip] % 100 {
+            01 => (self.set(3, self.get(1) + self.get(2)), self.inc(4)),
+            02 => (self.set(3, self.get(1) * self.get(2)), self.inc(4)),
+            03 => {
+                let input = self.input.next()?;
+                (self.set(1, input), self.inc(2))
+            }
+            04 => {
+                let res = self.get(1);
+                self.inc(2);
+                return Some(Some(res));
+            }
+            05 => (self.jmp_if(self.get(1) != 0, self.get(2), 3), self.inc(0)),
+            06 => (self.jmp_if(self.get(1) == 0, self.get(2), 3), self.inc(0)),
+            07 => (self.set(3, (self.get(1) < self.get(2)) as i64), self.inc(4)),
+            08 => (
+                self.set(3, (self.get(1) == self.get(2)) as i64),
+                self.inc(4),
+            ),
+            09 => (self.base += self.get(1), self.inc(2)),
+            99 => return Some(None),
+            xx => panic!("Unexptected opcode {}", xx),
+        };
+        None
+    }
 }
 
 impl<T: Iterator<Item = i64>> Iterator for Vm<T> {
     type Item = i64;
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            match self.data[self.ip] % 100 {
-                01 => (self.set(3, self.get(1) + self.get(2)), self.inc(4)),
-                02 => (self.set(3, self.get(1) * self.get(2)), self.inc(4)),
-                03 => {
-                    let input = self.input.next()?;
-                    (self.set(1, input), self.inc(2))
-                }
-                04 => {
-                    let res = self.get(1);
-                    self.inc(2);
-                    return Some(res);
-                }
-                05 => (self.jmp_if(self.get(1) != 0, self.get(2), 3), self.inc(0)),
-                06 => (self.jmp_if(self.get(1) == 0, self.get(2), 3), self.inc(0)),
-                07 => (self.set(3, (self.get(1) < self.get(2)) as i64), self.inc(4)),
-                08 => (
-                    self.set(3, (self.get(1) == self.get(2)) as i64),
-                    self.inc(4),
-                ),
-                09 => (self.base += self.get(1), self.inc(2)),
-                99 => return None,
-                xx => panic!("Unexptected opcode {}", xx),
-            };
+            if let Some(x) = self.single_step() {
+                return x;
+            }
         }
     }
 }
