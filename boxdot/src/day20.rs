@@ -2,9 +2,11 @@ use std::cmp::Reverse;
 use std::collections::hash_map::Entry;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 
-pub fn solve(input: &str) -> Option<usize> {
+pub fn solve(input: &str) -> Option<(usize, usize)> {
     let map = parse(input);
-    shortest_path_len(&map)
+    let part1 = shortest_path_len(&map)?;
+    let part2 = shortest_path_len_with_levels(&map)?;
+    Some((part1, part2))
 }
 
 type Coord = (usize, usize);
@@ -25,6 +27,12 @@ impl Vault {
 
     fn get(&self, (x, y): Coord) -> Option<char> {
         Some(*self.map.get(y)?.get(x)? as char)
+    }
+
+    fn is_outer(&self, (x, y): Coord) -> bool {
+        let width = self.map[0].len();
+        let height = self.map.len();
+        x == 2 || x + 3 == width || y == 2 || y + 3 == height
     }
 }
 
@@ -66,11 +74,7 @@ fn portals(vault: &Vault) -> HashMap<Coord, Portal> {
     horiz.chain(vert).collect()
 }
 
-fn bfs(
-    orig: Coord,
-    vault: &Vault,
-    portals: &HashMap<Coord, Portal>,
-) -> Vec<(usize, Coord, Portal)> {
+fn bfs(orig: Coord, vault: &Vault, portals: &HashMap<Coord, Portal>) -> Vec<(usize, Coord, bool)> {
     let mut q = VecDeque::new();
     q.push_back((0, orig));
     let mut seen = HashSet::new();
@@ -87,7 +91,7 @@ fn bfs(
                     .map(|(&pos, _)| pos);
                 let dist = dist + jump_pos.map(|_| 1).unwrap_or(0);
                 let pos = jump_pos.unwrap_or(pos);
-                paths.push((dist, pos, *portal));
+                paths.push((dist, pos, vault.is_outer(pos)));
             }
         }
 
@@ -122,10 +126,23 @@ fn shortest_path_len(vault: &Vault) -> Option<usize> {
     dijkstra(orig, dest, &paths)
 }
 
+fn shortest_path_len_with_levels(vault: &Vault) -> Option<usize> {
+    let portals = portals(vault);
+    let (&orig, _) = portals.iter().find(|&(_, &p)| p == ('A', 'A'))?;
+    let (&dest, _) = portals.iter().find(|&(_, &p)| p == ('Z', 'Z'))?;
+
+    let paths: HashMap<Coord, _> = portals
+        .keys()
+        .map(|&orig| (orig, bfs(orig, vault, &portals)))
+        .collect();
+
+    multilevel_dijksta(orig, dest, &paths)
+}
+
 fn dijkstra(
     orig: Coord,
     dest: Coord,
-    paths: &HashMap<Coord, Vec<(usize, Coord, Portal)>>,
+    paths: &HashMap<Coord, Vec<(usize, Coord, bool)>>,
 ) -> Option<usize> {
     let mut heap = BinaryHeap::new();
     heap.push(Reverse((0, orig)));
@@ -138,7 +155,7 @@ fn dijkstra(
             return Some(dist);
         }
 
-        for &(portal_dist, pos, _portal) in &paths[&pos] {
+        for &(portal_dist, pos, _is_outer) in &paths[&pos] {
             let dist = dist + portal_dist;
             match distances.entry(pos) {
                 Entry::Vacant(entry) => {
@@ -148,6 +165,52 @@ fn dijkstra(
                 Entry::Occupied(mut entry) if dist < *entry.get() => {
                     entry.insert(dist);
                     heap.push(Reverse((dist, pos)));
+                }
+                _ => {}
+            }
+        }
+    }
+
+    None
+}
+
+fn multilevel_dijksta(
+    orig: Coord,
+    dest: Coord,
+    paths: &HashMap<Coord, Vec<(usize, Coord, bool)>>,
+) -> Option<usize> {
+    let mut heap = BinaryHeap::new();
+    heap.push(Reverse((0, orig, 0_isize))); // (dist, pos, level)
+
+    let mut distances = HashMap::new();
+    distances.insert((orig, 0_isize), 0); // (pos, level) -> dist
+
+    while let Some(Reverse((dist, pos, level))) = heap.pop() {
+        for &(portal_dist, pos, is_outer) in &paths[&pos] {
+            if pos == orig {
+                continue;
+            } else if pos == dest {
+                if level == 0 {
+                    return Some(dist + portal_dist);
+                } else {
+                    continue;
+                }
+            }
+
+            let dist = dist + portal_dist;
+            let level = level + if is_outer { 1 } else { -1 };
+            if level < 0 {
+                continue;
+            }
+
+            match distances.entry((pos, level)) {
+                Entry::Vacant(entry) => {
+                    entry.insert(dist);
+                    heap.push(Reverse((dist, pos, level)));
+                }
+                Entry::Occupied(mut entry) if dist < *entry.get() => {
+                    entry.insert(dist);
+                    heap.push(Reverse((dist, pos, level)));
                 }
                 _ => {}
             }
