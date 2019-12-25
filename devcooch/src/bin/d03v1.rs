@@ -60,10 +60,7 @@ fn def_to_lines(wire: &str) -> (Vec<Vertical>, Vec<Horizontal>) {
     (verticals, horizontals)
 }
 
-fn create_intersections(
-    verticals: &[Vertical],
-    horizontals: &[Horizontal],
-) -> Vec<(i32, i32)> {
+fn create_intersections(verticals: &[Vertical], horizontals: &[Horizontal]) -> Vec<(i32, i32)> {
     let mut dots = Vec::new();
     for line in verticals {
         let any_h = horizontals.binary_search_by(|probe| match probe.x1.cmp(&line.x) {
