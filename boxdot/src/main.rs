@@ -18,6 +18,7 @@ mod day17;
 mod day18;
 mod day19;
 mod day20;
+mod day21;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = std::env::args();
@@ -57,6 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         18 => println!("{:?}", day18::solve(&input)),
         19 => println!("{:?}", day19::solve(&input)),
         20 => println!("{:?}", day20::solve(&input)),
+        21 => println!("{:?}", day21::solve(&input)),
         _ => eprintln!("invalid day: {}", day),
     }
 
