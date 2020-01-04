@@ -1,6 +1,9 @@
 use crate::day09::{execute, parse, Memory};
 
 /// Just play the game! Its fun! :)
+///
+/// Collect all items that are collectable (don't kill you) and find
+/// a combination of the items needed at the checkpoint.
 pub fn solve(input: &str) {
     let mem = parse(input);
     run(mem)
